@@ -1,16 +1,14 @@
-const {Low} = require("lowdb");
-const {JSONFile} = require("lowdb/node")
+const { Low } = require("lowdb");
+const { JSONFile } = require("lowdb/node");
 const path = require("path");
-
+const fs = require("fs");
 
 const file = path.join(__dirname, '../../data/personajes.json');
 const adapter = new JSONFile(file);
-const db = new Low (adapter);
+const db = new Low(adapter,  { personajes: [] });
 
 async function inicializarDB() {
     await db.read();
-    db.data ||= {personajes: []};
-    await db.write();
 }
 
 async function guardarPersonaje(personaje) {
