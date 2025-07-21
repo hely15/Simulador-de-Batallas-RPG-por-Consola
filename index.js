@@ -43,7 +43,8 @@ async function main() {
 
         console.log(`Has elegido ser un ${clase} llamado ${nombre}. ¡Prepárate para la batalla!`);
 
-    guardarPersonaje(jugador)
+    await guardarPersonaje(jugador);
+    console.log("¡Prepárate para la batalla!\n");
 
     iniciarBatalla(jugador);
     

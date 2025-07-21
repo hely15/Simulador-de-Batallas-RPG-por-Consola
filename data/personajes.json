@@ -1,3 +1,70 @@
 {
-  "personajes": []
+  "personajes": [
+    {
+      "id": "9acfa1df-96ed-4c79-9f68-eda0251ea2f8",
+      "nombre": "ded",
+      "clase": "Mago",
+      "nivel": 1,
+      "vida": "80/80",
+      "mana": "120/120",
+      "ataque": 15,
+      "defensa": 8,
+      "velocidad": 12,
+      "experiencia": "0/100",
+      "especialidad": "Magia y hechizos",
+      "habilidades": [
+        "Bola de Fuego",
+        "Curación",
+        "Rayo de Hielo"
+      ],
+      "grimorio": [
+        "Fuego",
+        "Hielo",
+        "Curación",
+        "Rayo"
+      ]
+    },
+    {
+      "id": "6090db6d-6ffe-45dd-a484-21c10c5e2efc",
+      "nombre": "de",
+      "clase": "Mago",
+      "nivel": 1,
+      "vida": "80/80",
+      "mana": "120/120",
+      "ataque": 15,
+      "defensa": 8,
+      "velocidad": 12,
+      "experiencia": "0/100",
+      "especialidad": "Magia y hechizos",
+      "habilidades": [
+        "Bola de Fuego",
+        "Curación",
+        "Rayo de Hielo"
+      ],
+      "grimorio": [
+        "Fuego",
+        "Hielo",
+        "Curación",
+        "Rayo"
+      ]
+    },
+    {
+      "id": "7523ca95-fa42-4c9f-86c7-a29d5b217a18",
+      "nombre": "dw",
+      "clase": "Guerrero",
+      "nivel": 1,
+      "vida": "150/150",
+      "mana": "30/30",
+      "ataque": 25,
+      "defensa": 15,
+      "velocidad": 8,
+      "experiencia": "0/100",
+      "especialidad": "Combate cuerpo a cuerpo",
+      "habilidades": [
+        "Golpe Devastador",
+        "Berseker",
+        "Escudo Defensivo"
+      ]
+    }
+  ]
 }

@@ -17,7 +17,7 @@
   "dependencies": {
     "chalk": "^4.1.2",
     "inquirer": "^9.3.7",
-    "lowdb": "^7.0.1",
+    "lowdb": "^1.0.0",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

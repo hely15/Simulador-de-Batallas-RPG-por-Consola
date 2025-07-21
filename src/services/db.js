@@ -1,26 +1,28 @@
-const { Low } = require("lowdb");
-const { JSONFile } = require("lowdb/node");
-const path = require("path");
-const fs = require("fs");
+const low = require('lowdb');
+const FileSync = require('lowdb/adapters/FileSync');
+const path = require('path');
 
 const file = path.join(__dirname, '../../data/personajes.json');
-const adapter = new JSONFile(file);
-const db = new Low(adapter,  { personajes: [] });
+const adapter = new FileSync(file);
+const db = low(adapter);
 
-async function inicializarDB() {
-    await db.read();
+// Inicializa la base de datos
+function inicializarDB() {
+  db.defaults({ personajes: [] }).write();
 }
 
-async function guardarPersonaje(personaje) {
-    await inicializarDB();
-    db.data.personajes.push(personaje);
-    await db.write();
-    console.log(`Personaje ${personaje.nombre} guardado exitosamente.`);
+// Guarda un personaje
+function guardarPersonaje(personaje) {
+  inicializarDB();
+  const info = personaje.obtenerInformacion(); // Método público
+  db.get('personajes').push(info).write();
+  console.log(`Personaje ${info.nombre} guardado exitosamente.`);
 }
 
-async function cargarPersonajes() {
-    await inicializarDB();
-    return db.data.personajes;
+// Carga todos los personajes
+function cargarPersonajes() {
+  inicializarDB();
+  return db.get('personajes').value();
 }
 
 module.exports = {
