@@ -1,4 +1,4 @@
-const {personaje} = requiere('./personaje');
+const {personaje} = require('./personaje');
 
 /**
  * Clase Guerrero - especializado en combate cuerpo a cuerpo

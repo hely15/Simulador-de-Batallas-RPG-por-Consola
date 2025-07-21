@@ -1,12 +1,10 @@
-const {personaje} = requiere('./personaje');
+const { personaje } = require('./personaje');
 
 /**
  * Clase Mago - especializado en magia y hechizos
  * Aplica OCP: extiende personaje sin modificarlo
  * Aplica LSP: puede usarse como instancia de personaje
 */
-
-
 
 class Mago extends personaje {
     constructor(nombre) {
