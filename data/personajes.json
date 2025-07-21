@@ -65,6 +65,60 @@
         "Berseker",
         "Escudo Defensivo"
       ]
+    },
+    {
+      "id": "8e78174f-3eeb-4db3-8d35-bcdacd120586",
+      "nombre": "johan",
+      "clase": "Guerrero",
+      "nivel": 1,
+      "vida": "150/150",
+      "mana": "30/30",
+      "ataque": 25,
+      "defensa": 15,
+      "velocidad": 8,
+      "experiencia": "0/100",
+      "especialidad": "Combate cuerpo a cuerpo",
+      "habilidades": [
+        "Golpe Devastador",
+        "Berseker",
+        "Escudo Defensivo"
+      ]
+    },
+    {
+      "id": "9779051b-e14a-4ab9-87e0-a14bc0cd75c1",
+      "nombre": "ola",
+      "clase": "Guerrero",
+      "nivel": 1,
+      "vida": "150/150",
+      "mana": "30/30",
+      "ataque": 25,
+      "defensa": 15,
+      "velocidad": 8,
+      "experiencia": "0/100",
+      "especialidad": "Combate cuerpo a cuerpo",
+      "habilidades": [
+        "Golpe Devastador",
+        "Berseker",
+        "Escudo Defensivo"
+      ]
+    },
+    {
+      "id": "9ff0be5e-3472-4f83-940f-cf4902f16416",
+      "nombre": "de",
+      "clase": "Guerrero",
+      "nivel": 1,
+      "vida": "150/150",
+      "mana": "30/30",
+      "ataque": 25,
+      "defensa": 15,
+      "velocidad": 8,
+      "experiencia": "0/100",
+      "especialidad": "Combate cuerpo a cuerpo",
+      "habilidades": [
+        "Golpe Devastador",
+        "Berseker",
+        "Escudo Defensivo"
+      ]
     }
   ]
 }
