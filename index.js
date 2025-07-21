@@ -1,3 +1,4 @@
+const {guardarPersonaje} = require("./src/services/db.js")
 const inquirer = require('inquirer').default;
 const {Mago} = require("./src/models/mago.js");
 const {Guerrero} = require("./src/models/guerrero.js")
@@ -41,6 +42,8 @@ async function main() {
     }       
 
         console.log(`Has elegido ser un ${clase} llamado ${nombre}. ¡Prepárate para la batalla!`);
+
+    guardarPersonaje(jugador)
 
     iniciarBatalla(jugador);
     
