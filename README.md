@@ -56,20 +56,33 @@ Sigue las instrucciones para:
 ## Estructura del proyecto
 ``` pgsql
 ├── index.js
+├── README.md
 ├── package.json
 ├── data/
 │   └── personajes.json
+│
 ├── src/
+│   ├── interfaces/
+│   │   └── interfaces.js
 │   ├── models/
 │   │   ├── personaje.js
 │   │   ├── mago.js
 │   │   ├── guerrero.js
+│   │   ├── enemigo.js
+│   │   ├── item.js
+│   │   ├── inventario.js
 │   │   └── arquero.js
+│   │
 │   ├── services/
 │   │   ├── db.js
+│   │   ├── generadorEnemigos.js
+│   │   ├── gestorInventario.js
+│   │   ├── gestorPersonajes.js
+│   │   ├── notificador.js
+│   │   ├── validador.js
 │   │   └── gestorBatallas.js
-│   └── utils/
-│       └── generadorEnemigos.js
+
+
 ```
 
 ## Diagrama de clases UML
