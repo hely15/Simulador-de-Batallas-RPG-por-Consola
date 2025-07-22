@@ -161,6 +161,78 @@
         "Curación",
         "Rayo"
       ]
+    },
+    {
+      "id": "bb5579f1-6242-45e8-b074-5e76bb41bd7f",
+      "nombre": "de",
+      "clase": "Mago",
+      "nivel": 1,
+      "vida": "72/80",
+      "mana": "95/120",
+      "ataque": 15,
+      "defensa": 8,
+      "velocidad": 12,
+      "experiencia": "25/100",
+      "especialidad": "Magia y hechizos",
+      "habilidades": [
+        "Bola de Fuego",
+        "Curación",
+        "Rayo de Hielo"
+      ],
+      "grimorio": [
+        "Fuego",
+        "Hielo",
+        "Curación",
+        "Rayo"
+      ]
+    },
+    {
+      "id": "e4597654-3f99-440a-862b-f4df97ddf84d",
+      "nombre": "hola",
+      "clase": "Mago",
+      "nivel": 1,
+      "vida": "80/80",
+      "mana": "120/120",
+      "ataque": 15,
+      "defensa": 8,
+      "velocidad": 12,
+      "experiencia": "0/100",
+      "especialidad": "Magia y hechizos",
+      "habilidades": [
+        "Bola de Fuego",
+        "Curación",
+        "Rayo de Hielo"
+      ],
+      "grimorio": [
+        "Fuego",
+        "Hielo",
+        "Curación",
+        "Rayo"
+      ]
+    },
+    {
+      "id": "e4597654-3f99-440a-862b-f4df97ddf84d",
+      "nombre": "hola",
+      "clase": "Mago",
+      "nivel": 1,
+      "vida": "59/80",
+      "mana": "90/120",
+      "ataque": 15,
+      "defensa": 8,
+      "velocidad": 12,
+      "experiencia": "50/100",
+      "especialidad": "Magia y hechizos",
+      "habilidades": [
+        "Bola de Fuego",
+        "Curación",
+        "Rayo de Hielo"
+      ],
+      "grimorio": [
+        "Fuego",
+        "Hielo",
+        "Curación",
+        "Rayo"
+      ]
     }
   ]
 }
