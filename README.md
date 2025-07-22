@@ -90,7 +90,7 @@ Sigue las instrucciones para:
 
 ## video de sustentacion
 
-https://drive.google.com/drive/folders/19DL6SPB4fuD3SE4lROdYHOuDhAF6sWBx?usp=sharing
+https://www.canva.com/design/DAGt3HvW4AI/r71y3uvzu96qUeVZq3VzNw/edit?utm_content=DAGt3HvW4AI&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
 
 ## Autores
  - Johan Andrey Guarin
