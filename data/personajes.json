@@ -119,6 +119,24 @@
         "Berseker",
         "Escudo Defensivo"
       ]
+    },
+    {
+      "id": "b88412dd-b8a7-4f72-b72a-e2ae0125a34d",
+      "nombre": "gdf",
+      "clase": "Guerrero",
+      "nivel": 1,
+      "vida": "150/150",
+      "mana": "30/30",
+      "ataque": 25,
+      "defensa": 15,
+      "velocidad": 8,
+      "experiencia": "0/100",
+      "especialidad": "Combate cuerpo a cuerpo",
+      "habilidades": [
+        "Golpe Devastador",
+        "Berseker",
+        "Escudo Defensivo"
+      ]
     }
   ]
 }
