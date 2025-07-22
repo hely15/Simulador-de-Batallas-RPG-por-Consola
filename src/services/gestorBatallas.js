@@ -1,28 +1,30 @@
-const GeneradorEnemigos = require("./generadorEnemigos")
+const { GeneradorEnemigos } = require("./generadorEnemigos")
+const { GestorInventario } = require("./gestorInventario")
+const { NotificadorConsola } = require("./notificador")
 const inquirer = require("inquirer").default
 const chalk = require("chalk")
 
 class GestorBatallas {
-  constructor() {
+  constructor(notificador = new NotificadorConsola(), gestorInventario = new GestorInventario()) {
+    this.notificador = notificador
+    this.gestorInventario = gestorInventario
+    this.generadorEnemigos = new GeneradorEnemigos()
     this.efectosActivos = new Map()
   }
 
   async iniciarBatalla(jugador) {
-    const enemigo = GeneradorEnemigos.generarAleatorio(jugador.nivel)
+    const enemigo = this.generadorEnemigos.generarAleatorio(jugador.nivel)
 
     console.clear()
-    console.log(chalk.red.bold("⚔️  ¡COMIENZA LA BATALLA! ⚔️"))
-    console.log(
-      chalk.blue(`${jugador.nombre} (${jugador.clase})`) + chalk.white(" VS ") + chalk.red(`${enemigo.nombre}`),
-    )
-    console.log("═".repeat(50))
+    this.notificador.mostrarTitulo("COMIENZA LA BATALLA")
+    this.notificador.notificar(`${jugador.nombre} (${jugador.clase}) VS ${enemigo.nombre}`, "batalla")
 
     // Determinar quién va primero
     let turnoJugador = jugador.velocidad >= enemigo.velocidad
     let turno = 1
 
     while (jugador.estaVivo() && enemigo.estaVivo()) {
-      console.log(chalk.yellow(`\n--- TURNO ${turno} ---`))
+      this.notificador.notificar(`--- TURNO ${turno} ---`, "info")
       this.mostrarEstadoBatalla(jugador, enemigo)
 
       if (turnoJugador) {
@@ -44,13 +46,13 @@ class GestorBatallas {
       }
     }
 
-    this.mostrarResultadoBatalla(jugador, enemigo)
+    await this.mostrarResultadoBatalla(jugador, enemigo)
   }
 
   async turnoJugador(jugador, enemigo) {
-    console.log(chalk.cyan(`\n🎯 Turno de ${jugador.nombre}`))
+    this.notificador.notificar(`Turno de ${jugador.nombre}`, "info")
 
-    const opciones = ["Ataque básico", "Usar habilidad especial", "Defenderse"]
+    const opciones = ["Ataque básico", "Usar habilidad especial", "Usar item del inventario", "Defenderse"]
 
     const { accion } = await inquirer.prompt([
       {
@@ -70,43 +72,60 @@ class GestorBatallas {
       case "Usar habilidad especial":
         resultado = await this.usarHabilidadEspecial(jugador, enemigo)
         break
+      case "Usar item del inventario":
+        resultado = await this.gestorInventario.mostrarInventario(jugador)
+        if (!resultado) {
+          resultado = this.ataqueBasico(jugador, enemigo)
+        }
+        break
       case "Defenderse":
         resultado = this.defenderse(jugador)
         break
     }
 
-    if (resultado) {
-      console.log(chalk.green(`💥 ${resultado.mensaje}`))
-      if (resultado.danio) {
-        console.log(chalk.red(`   Daño causado: ${resultado.danio}`))
-      }
-      if (resultado.efecto) {
-        this.aplicarEfecto(enemigo, resultado.efecto, resultado.duracion || 1)
-      }
-    }
+    this.procesarResultadoAccion(resultado, enemigo)
   }
 
   async turnoEnemigo(enemigo, jugador) {
-    console.log(chalk.red(`\n👹 Turno de ${enemigo.nombre}`))
+    this.notificador.notificar(`Turno de ${enemigo.nombre}`, "batalla")
 
-    // IA simple del enemigo
-    const accionAleatoria = Math.random()
+    const habilidadElegida = enemigo.elegirHabilidad()
     let resultado
 
-    if (accionAleatoria < 0.7) {
-      resultado = this.ataqueBasico(enemigo, jugador)
-    } else {
-      resultado = this.ataqueEspecialEnemigo(enemigo, jugador)
+    switch (habilidadElegida) {
+      case "Rugido":
+        resultado = enemigo.rugido(jugador)
+        break
+      case "Golpe Salvaje":
+        resultado = enemigo.golpeSalvaje(jugador)
+        break
+      case "Furia":
+        resultado = enemigo.furia()
+        break
+      case "Regeneración":
+        resultado = enemigo.regeneracion()
+        break
+      default:
+        resultado = this.ataqueBasico(enemigo, jugador)
     }
 
-    if (resultado) {
-      console.log(chalk.red(`💥 ${resultado.mensaje}`))
-      if (resultado.danio) {
-        console.log(chalk.yellow(`   Daño recibido: ${resultado.danio}`))
-      }
-    }
-
+    this.procesarResultadoAccion(resultado, jugador)
     await new Promise((resolve) => setTimeout(resolve, 1500))
+  }
+
+  procesarResultadoAccion(resultado, objetivo) {
+    if (!resultado) return
+    this.notificador.notificar(resultado.mensaje, "batalla")
+    if (resultado.danio && objetivo) {
+      objetivo.vida -= resultado.danio
+      this.notificador.notificar(`Daño causado: ${resultado.danio}`, "advertencia")
+    }
+    if (resultado.curacion) {
+      this.notificador.notificar(`Curación: ${resultado.curacion}`, "exito")
+    }
+    if (resultado.efecto && objetivo) {
+      this.aplicarEfecto(objetivo, resultado.efecto, resultado.duracion || 1)
+    }
   }
 
   async usarHabilidadEspecial(jugador, enemigo) {
@@ -146,7 +165,6 @@ class GestorBatallas {
       case "Golpe Devastador":
         const golpe = guerrero.golpeDevastador(objetivo)
         if (golpe.exito) {
-          objetivo.vida -= golpe.danio
           return { mensaje: golpe.mensaje, danio: golpe.danio }
         }
         return { mensaje: golpe.mensaje }
@@ -161,7 +179,7 @@ class GestorBatallas {
 
       case "Escudo Defensivo":
         this.aplicarEfecto(guerrero, "escudo_defensivo", 3)
-        return { mensaje: `${guerrero.nombre} levanta su escudo defensivo!` }
+        return { mensaje: `${guerrero.nombre} levanta su escudo defensivo` }
 
       default:
         return this.ataqueBasico(guerrero, objetivo)
@@ -173,7 +191,6 @@ class GestorBatallas {
       case "Bola de Fuego":
         const bola = mago.bolaDeFuego(objetivo)
         if (bola.exito) {
-          objetivo.vida -= bola.danio
           return { mensaje: bola.mensaje, danio: bola.danio }
         }
         return { mensaje: bola.mensaje }
@@ -181,14 +198,13 @@ class GestorBatallas {
       case "Curación":
         const curacion = mago.curacion()
         if (curacion.exito) {
-          return { mensaje: `${curacion.mensaje} Vida restaurada: ${curacion.curacion}` }
+          return { mensaje: curacion.mensaje, curacion: curacion.curacion }
         }
         return { mensaje: curacion.mensaje }
 
       case "Rayo de Hielo":
         const rayo = mago.rayoDeHielo(objetivo)
         if (rayo.exito) {
-          objetivo.vida -= rayo.danio
           return {
             mensaje: rayo.mensaje,
             danio: rayo.danio,
@@ -208,7 +224,6 @@ class GestorBatallas {
       case "Disparo Certero":
         const disparo = arquero.disparoCertero(objetivo)
         if (disparo.exito) {
-          objetivo.vida -= disparo.danio
           return { mensaje: disparo.mensaje, danio: disparo.danio }
         }
         return { mensaje: disparo.mensaje }
@@ -216,7 +231,6 @@ class GestorBatallas {
       case "Lluvia de Flechas":
         const lluvia = arquero.lluviaDeFlechas([objetivo])
         if (lluvia.exito) {
-          objetivo.vida -= lluvia.danio
           return { mensaje: lluvia.mensaje, danio: lluvia.danio }
         }
         return { mensaje: lluvia.mensaje }
@@ -224,7 +238,6 @@ class GestorBatallas {
       case "Trampa de Fuego":
         const trampa = arquero.tiroExplosivo(objetivo)
         if (trampa.exito) {
-          objetivo.vida -= trampa.danio
           return {
             mensaje: trampa.mensaje,
             danio: trampa.danio,
@@ -243,37 +256,8 @@ class GestorBatallas {
     const danioBase = Math.max(1, atacante.ataque - objetivo.defensa)
     const danio = Math.floor(danioBase + Math.random() * 5)
 
-    objetivo.vida -= danio
-
     return {
       mensaje: `${atacante.nombre} ataca a ${objetivo.nombre}`,
-      danio: danio,
-    }
-  }
-
-  ataqueEspecialEnemigo(enemigo, jugador) {
-    const ataques = ["Golpe Salvaje", "Rugido Intimidante", "Ataque Frenético"]
-
-    const ataque = ataques[Math.floor(Math.random() * ataques.length)]
-    let danio = Math.max(1, enemigo.ataque - jugador.defensa)
-
-    switch (ataque) {
-      case "Golpe Salvaje":
-        danio = Math.floor(danio * 1.5)
-        break
-      case "Rugido Intimidante":
-        this.aplicarEfecto(jugador, "intimidado", 2)
-        danio = Math.floor(danio * 0.8)
-        break
-      case "Ataque Frenético":
-        danio = Math.floor(danio * 1.2)
-        break
-    }
-
-    jugador.vida -= danio
-
-    return {
-      mensaje: `${enemigo.nombre} usa ${ataque}`,
       danio: danio,
     }
   }
@@ -292,7 +276,7 @@ class GestorBatallas {
       turnosRestantes: duracion,
     })
 
-    console.log(chalk.magenta(`✨ ${personaje.nombre} está afectado por: ${efecto}`))
+    this.notificador.notificar(`${personaje.nombre} está afectado por: ${efecto}`, "advertencia")
   }
 
   procesarEfectos(personaje) {
@@ -303,29 +287,32 @@ class GestorBatallas {
     efectosPersonaje.forEach(([key, data]) => {
       switch (data.efecto) {
         case "ataque_aumentado":
-          // El efecto ya está aplicado en las habilidades
+          this.notificador.notificar(`${personaje.nombre} tiene ataque aumentado`, "info")
           break
         case "congelado":
-          console.log(chalk.blue(`❄️ ${personaje.nombre} está congelado y pierde el turno`))
+          this.notificador.notificar(`${personaje.nombre} está congelado`, "advertencia")
           break
         case "escudo_defensivo":
-          console.log(chalk.cyan(`🛡️ ${personaje.nombre} tiene defensa aumentada`))
+          this.notificador.notificar(`${personaje.nombre} tiene defensa aumentada`, "info")
           break
         case "intimidado":
-          console.log(chalk.gray(`😰 ${personaje.nombre} está intimidado`))
+          this.notificador.notificar(`${personaje.nombre} está intimidado`, "advertencia")
+          break
+        case "furia":
+          this.notificador.notificar(`${personaje.nombre} está en furia`, "batalla")
           break
       }
 
       data.turnosRestantes--
       if (data.turnosRestantes <= 0) {
         this.efectosActivos.delete(key)
-        console.log(chalk.yellow(`⏰ El efecto ${data.efecto} de ${personaje.nombre} ha terminado`))
+        this.notificador.notificar(`El efecto ${data.efecto} de ${personaje.nombre} ha terminado`, "info")
       }
     })
   }
 
   mostrarEstadoBatalla(jugador, enemigo) {
-    console.log("\n" + "═".repeat(50))
+    this.notificador.mostrarSeparador()
 
     // Estado del jugador
     const vidaJugadorPorcentaje = (jugador.vida / jugador.vidaMaxima) * 100
@@ -339,10 +326,10 @@ class GestorBatallas {
     const vidaEnemigoPorcentaje = (enemigo.vida / enemigo.vidaMaxima) * 100
     const barraVidaEnemigo = this.crearBarraVida(vidaEnemigoPorcentaje)
 
-    console.log(chalk.red.bold(`\n👹 ${enemigo.nombre}`))
+    console.log(chalk.red.bold(`\n ${enemigo.nombre} (Nivel ${enemigo.nivel})`))
     console.log(`   ❤️  Vida: ${barraVidaEnemigo} ${enemigo.vida}/${enemigo.vidaMaxima}`)
 
-    console.log("═".repeat(50))
+    this.notificador.mostrarSeparador()
   }
 
   crearBarraVida(porcentaje) {
@@ -357,31 +344,30 @@ class GestorBatallas {
     return color("█".repeat(lleno)) + chalk.gray("░".repeat(vacio))
   }
 
-  mostrarResultadoBatalla(jugador, enemigo) {
-    console.log("\n" + "═".repeat(50))
+  async mostrarResultadoBatalla(jugador, enemigo) {
+    this.notificador.mostrarSeparador()
 
     if (jugador.estaVivo()) {
-      console.log(chalk.green.bold("🎉 ¡VICTORIA! 🎉"))
-      console.log(chalk.green(`${jugador.nombre} ha derrotado a ${enemigo.nombre}!`))
-
-      // Otorgar experiencia
+      this.notificador.notificar("¡VICTORIA!", "exito")
+      this.notificador.notificar(`${jugador.nombre} ha derrotado a ${enemigo.nombre}!`, "exito")
       const expGanada = enemigo.nivel * 25
       jugador.experiencia += expGanada
-      console.log(chalk.cyan(`💫 Has ganado ${expGanada} puntos de experiencia!`))
-
-      // Verificar subida de nivel
+      this.notificador.notificar(`Has ganado ${expGanada} puntos de experiencia!`, "info")
       if (jugador.experiencia >= jugador.experienciaNecesaria) {
-        console.log(chalk.yellow.bold("🌟 ¡HAS SUBIDO DE NIVEL! 🌟"))
+        this.notificador.notificar("¡HAS SUBIDO DE NIVEL!", "exito")
         jugador.subirNivel()
-        console.log(chalk.yellow(`Ahora eres nivel ${jugador.nivel}!`))
+        this.notificador.notificar(`Ahora eres nivel ${jugador.nivel}!`, "exito")
+      }
+      if (Math.random() < 0.6) {
+        this.gestorInventario.agregarItemAleatorio(jugador)
       }
     } else {
-      console.log(chalk.red.bold("💀 DERROTA 💀"))
-      console.log(chalk.red(`${enemigo.nombre} ha derrotado a ${jugador.nombre}...`))
-      console.log(chalk.gray("¡No te rindas! Inténtalo de nuevo."))
+      this.notificador.notificar("DERROTA", "error")
+      this.notificador.notificar(`${enemigo.nombre} ha derrotado a ${jugador.nombre}...`, "error")
+      this.notificador.notificar("¡No te rindas! Inténtalo de nuevo.", "info")
     }
 
-    console.log("═".repeat(50))
+    this.notificador.mostrarSeparador()
   }
 
   async pausa() {

@@ -1,136 +1,123 @@
-const { guardarPersonaje, cargarPersonajes } = require("./src/services/db.js");
-const inquirer = require('inquirer').default;
-const { Mago } = require("./src/models/mago.js");
-const { Guerrero } = require("./src/models/guerrero.js");
-const { Arquero } = require("./src/models/arquero.js");
-const { iniciarBatalla } = require("./src/services/gestorBatallas.js");
+const { GestorPersonajes } = require("./src/services/gestorPersonajes")
+const { GestorBatallas } = require("./src/services/gestorBatallas")
+const { NotificadorConsola } = require("./src/services/notificador")
+const inquirer = require("inquirer").default
 
-async function main() {
-    console.clear();
-    console.log("Bienvenido");
+class JuegoRPG {
+  constructor() {
+    this.notificador = new NotificadorConsola()
+    this.gestorPersonajes = new GestorPersonajes(this.notificador)
+    this.gestorBatallas = new GestorBatallas(this.notificador)
+  }
 
-    const { accion } = await inquirer.prompt([
+  async iniciar() {
+    console.clear()
+    this.notificador.mostrarTitulo("SIMULADOR DE BATALLAS RPG")
+    this.notificador.notificar("¡Bienvenido al mundo de las aventuras!", "exito")
+
+    while (true) {
+      const { accion } = await inquirer.prompt([
         {
-            type: "list",
-            name: "accion",
-            message: "¿Qué deseas hacer?",
-            choices: ["Crear nuevo personaje", "Cargar personaje existente"]
+          type: "list",
+          name: "accion",
+          message: "¿Qué deseas hacer?",
+          choices: ["Crear nuevo personaje", "Cargar personaje existente", "Salir del juego"],
+        },
+      ])
+
+      if (accion === "Salir del juego") {
+        this.notificador.notificar("¡Gracias por jugar! ¡Hasta la próxima!", "info")
+        process.exit(0)
+      }
+
+      let jugador
+
+      if (accion === "Crear nuevo personaje") {
+        jugador = await this.gestorPersonajes.crearPersonaje()
+      } else {
+        jugador = await this.gestorPersonajes.cargarPersonaje()
+        if (!jugador) {
+          this.notificador.notificar("Regresando al menú principal...", "info")
+          continue
         }
-    ]);
+      }
 
-    let jugador;
+      await this.menuJugador(jugador)
+    }
+  }
 
-    if (accion === "Crear nuevo personaje") {
-        const { nombre } = await inquirer.prompt([
-            {
-                type: "input",
-                name: "nombre",
-                message: "Ingresa tu nombre:",
-                validate: input => input.trim() !== "" || "El nombre no puede estar vacío"
-            }
-        ]);
+  async menuJugador(jugador) {
+    while (true) {
+      const { opcion } = await inquirer.prompt([
+        {
+          type: "list",
+          name: "opcion",
+          message: `¿Qué deseas hacer con ${jugador.nombre}?`,
+          choices: ["Iniciar batalla", "Ver estadísticas", "Ver inventario", "Volver al menú principal"],
+        },
+      ])
 
-        const { clase } = await inquirer.prompt([
-            {
-                type: "list",
-                name: "clase",
-                message: "Elige tu clase:",
-                choices: ["Mago", "Guerrero", "Arquero"]
-            }
-        ]);
+      switch (opcion) {
+        case "Ver estadísticas":
+          this.gestorPersonajes.mostrarEstadisticas(jugador)
+          await this.pausa()
+          break
 
-        switch (clase) {
-            case "Mago":
-                jugador = new Mago(nombre);
-                break;
-            case "Guerrero":
-                jugador = new Guerrero(nombre);
-                break;
-            case "Arquero":
-                jugador = new Arquero(nombre);
-                break;
-        }
+        case "Ver inventario":
+          await this.mostrarInventarioCompleto(jugador)
+          break
 
-        await guardarPersonaje(jugador);
-        console.log(`Personaje ${nombre} creado como ${clase} y guardado.`);
-    } else {
-        const personajes = await cargarPersonajes();
+        case "Iniciar batalla":
+          await this.gestorBatallas.iniciarBatalla(jugador)
 
-        if (personajes.length === 0) {
-            console.log("No hay personajes guardados. Crea uno primero.");
-            return main();
-        }
+          const { guardarPersonaje } = require("./src/services/db.js")
+          await guardarPersonaje(jugador)
+          this.notificador.notificar("Progreso guardado", "exito")
 
-        const { seleccionado } = await inquirer.prompt([
-            {
-                type: "list",
-                name: "seleccionado",
-                message: "Elige tu personaje:",
-                choices: personajes.map(p => `${p.nombre} - ${p.clase}`)
-            }
-        ]);
+          await this.pausa()
+          break
 
-        const [nombreSeleccionado] = seleccionado.split(" - ");
-        const personajeData = personajes.find(p => p.nombre === nombreSeleccionado);
+        case "Volver al menú principal":
+          return
+      }
+    }
+  }
 
-        // Reconstruye la instancia
-        switch (personajeData.clase) {
-            case "Mago":
-                jugador = new Mago(personajeData.nombre);
-                jugador.grimorio = personajeData.grimorio;
-                break;
-            case "Guerrero":
-                jugador = new Guerrero(personajeData.nombre);
-                break;
-            case "Arquero":
-                jugador = new Arquero(personajeData.nombre);
-                break;
-        }
-
-        // Asigna atributos comunes
-        jugador.vida = personajeData.vida;
-        jugador.ataque = personajeData.ataque;
-        jugador.defensa = personajeData.defensa;
-        jugador.nivel = personajeData.nivel;
-        jugador.experiencia = personajeData.experiencia;
-        jugador.experienciaNecesaria = personajeData.experienciaNecesaria;
-        jugador.habilidadesEspeciales = personajeData.habilidadesEspeciales;
-
-        console.log(`✅ Personaje ${jugador.nombre} cargado con éxito.`);
+  async mostrarInventarioCompleto(jugador) {
+    if (!jugador.inventario || !jugador.inventario.tieneItems()) {
+      this.notificador.notificar("Tu inventario está vacío", "advertencia")
+      return
     }
 
-    const { opcion } = await inquirer.prompt([
-        {
-            type: "list",
-            name: "opcion",
-            message: "¿Qué deseas hacer?",
-            choices: ["Iniciar batalla", "Ver estadísticas"]
-        }
-    ]);
+    const items = jugador.inventario.obtenerItemsDisponibles()
 
-    if (opcion === "Ver estadísticas") {
-        console.log("\n Estadísticas del personaje:");
-        console.log(jugador.obtenerInformacion());
-    } else {
-        await iniciarBatalla(jugador);
-    }
+    this.notificador.mostrarTitulo(`Inventario de ${jugador.nombre}`)
+    items.forEach((item) => {
+      console.log(`• ${item.nombre} x${item.cantidad} - ${item.descripcion}`)
+    })
 
-    // Continuar o salir
-    const { continuar } = await inquirer.prompt([
-        {
-            type: "confirm",
-            name: "continuar",
-            message: "¿Quieres volver al menú principal?",
-            default: false
-        }
-    ]);
+    await this.pausa()
+  }
 
-    if (continuar) {
-        return main();
-    } else {
-        console.log("Gracias por jugar, ¡hasta la próxima!");
-        process.exit();
-    }
+  async pausa() {
+    await inquirer.prompt([
+      {
+        type: "input",
+        name: "continuar",
+        message: "Presiona Enter para continuar...",
+      },
+    ])
+  }
 }
 
-main();
+async function main() {
+  const juego = new JuegoRPG()
+  await juego.iniciar()
+}
+
+process.on("unhandledRejection", (error) => {
+  console.error("Error no manejado:", error)
+  process.exit(1)
+})
+
+main().catch(console.error)

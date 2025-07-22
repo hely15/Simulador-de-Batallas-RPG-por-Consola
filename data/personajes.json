@@ -137,6 +137,30 @@
         "Berseker",
         "Escudo Defensivo"
       ]
+    },
+    {
+      "id": "2c54a03b-de3a-4379-b618-eff4951f650b",
+      "nombre": "de",
+      "clase": "Mago",
+      "nivel": 1,
+      "vida": "80/80",
+      "mana": "95/120",
+      "ataque": 15,
+      "defensa": 8,
+      "velocidad": 12,
+      "experiencia": "50/100",
+      "especialidad": "Magia y hechizos",
+      "habilidades": [
+        "Bola de Fuego",
+        "Curación",
+        "Rayo de Hielo"
+      ],
+      "grimorio": [
+        "Fuego",
+        "Hielo",
+        "Curación",
+        "Rayo"
+      ]
     }
   ]
 }
